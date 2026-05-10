@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.rag_index/
+uploads/
+reports/
+*.pyc
+*.pyo
+.env
+.git/

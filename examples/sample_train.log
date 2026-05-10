@@ -1,0 +1,41 @@
+[Plant3D] Experiment: Plant-GeoAT on greenhouse tomato point cloud segmentation
+[Config] dataset=Tomato3D split=plant-level model=Plant-GeoAT optimizer=AdamW lr=0.001 batch_size=8
+Epoch 001 | train_loss=1.432 | val_loss=1.221 | mIoU=0.421 | mAcc=0.566 | OA=0.702 | precision=0.612 | recall=0.584 | F1=0.598 | leaf_IoU=0.487 | stem_IoU=0.311
+Epoch 002 | train_loss=1.210 | val_loss=1.026 | mIoU=0.486 | mAcc=0.611 | OA=0.748 | precision=0.661 | recall=0.622 | F1=0.641 | leaf_IoU=0.548 | stem_IoU=0.376
+Epoch 003 | train_loss=1.087 | val_loss=0.944 | mIoU=0.533 | mAcc=0.646 | OA=0.774 | precision=0.689 | recall=0.651 | F1=0.669 | leaf_IoU=0.603 | stem_IoU=0.421
+Epoch 004 | train_loss=0.982 | val_loss=0.861 | mIoU=0.587 | mAcc=0.692 | OA=0.802 | precision=0.721 | recall=0.689 | F1=0.705 | leaf_IoU=0.651 | stem_IoU=0.488
+Epoch 005 | train_loss=0.905 | val_loss=0.802 | mIoU=0.632 | mAcc=0.724 | OA=0.827 | precision=0.748 | recall=0.714 | F1=0.731 | leaf_IoU=0.691 | stem_IoU=0.544
+Epoch 006 | train_loss=0.832 | val_loss=0.748 | mIoU=0.671 | mAcc=0.756 | OA=0.846 | precision=0.772 | recall=0.744 | F1=0.758 | leaf_IoU=0.731 | stem_IoU=0.579
+Epoch 007 | train_loss=0.771 | val_loss=0.706 | mIoU=0.701 | mAcc=0.781 | OA=0.861 | precision=0.791 | recall=0.764 | F1=0.777 | leaf_IoU=0.758 | stem_IoU=0.614
+Epoch 008 | train_loss=0.718 | val_loss=0.671 | mIoU=0.725 | mAcc=0.802 | OA=0.873 | precision=0.806 | recall=0.783 | F1=0.794 | leaf_IoU=0.781 | stem_IoU=0.642
+Epoch 009 | train_loss=0.683 | val_loss=0.645 | mIoU=0.746 | mAcc=0.817 | OA=0.884 | precision=0.821 | recall=0.801 | F1=0.811 | leaf_IoU=0.802 | stem_IoU=0.671
+Epoch 010 | train_loss=0.642 | val_loss=0.619 | mIoU=0.764 | mAcc=0.831 | OA=0.892 | precision=0.835 | recall=0.817 | F1=0.826 | leaf_IoU=0.819 | stem_IoU=0.692
+Epoch 011 | train_loss=0.605 | val_loss=0.594 | mIoU=0.781 | mAcc=0.842 | OA=0.901 | precision=0.846 | recall=0.829 | F1=0.837 | leaf_IoU=0.836 | stem_IoU=0.715
+Epoch 012 | train_loss=0.577 | val_loss=0.572 | mIoU=0.799 | mAcc=0.856 | OA=0.908 | precision=0.858 | recall=0.842 | F1=0.850 | leaf_IoU=0.852 | stem_IoU=0.739
+Epoch 013 | train_loss=0.549 | val_loss=0.551 | mIoU=0.814 | mAcc=0.868 | OA=0.914 | precision=0.867 | recall=0.853 | F1=0.860 | leaf_IoU=0.867 | stem_IoU=0.759
+Epoch 014 | train_loss=0.523 | val_loss=0.535 | mIoU=0.826 | mAcc=0.877 | OA=0.919 | precision=0.875 | recall=0.864 | F1=0.869 | leaf_IoU=0.879 | stem_IoU=0.773
+Epoch 015 | train_loss=0.501 | val_loss=0.519 | mIoU=0.837 | mAcc=0.884 | OA=0.923 | precision=0.883 | recall=0.872 | F1=0.877 | leaf_IoU=0.889 | stem_IoU=0.789
+Epoch 016 | train_loss=0.478 | val_loss=0.506 | mIoU=0.846 | mAcc=0.891 | OA=0.927 | precision=0.889 | recall=0.879 | F1=0.884 | leaf_IoU=0.898 | stem_IoU=0.801
+Epoch 017 | train_loss=0.459 | val_loss=0.493 | mIoU=0.856 | mAcc=0.898 | OA=0.931 | precision=0.896 | recall=0.887 | F1=0.891 | leaf_IoU=0.906 | stem_IoU=0.813
+Epoch 018 | train_loss=0.441 | val_loss=0.485 | mIoU=0.862 | mAcc=0.903 | OA=0.934 | precision=0.901 | recall=0.893 | F1=0.897 | leaf_IoU=0.912 | stem_IoU=0.820
+Epoch 019 | train_loss=0.426 | val_loss=0.477 | mIoU=0.868 | mAcc=0.908 | OA=0.936 | precision=0.906 | recall=0.899 | F1=0.902 | leaf_IoU=0.918 | stem_IoU=0.827
+Epoch 020 | train_loss=0.408 | val_loss=0.468 | mIoU=0.873 | mAcc=0.912 | OA=0.938 | precision=0.909 | recall=0.903 | F1=0.906 | leaf_IoU=0.923 | stem_IoU=0.833
+Epoch 021 | train_loss=0.391 | val_loss=0.462 | mIoU=0.878 | mAcc=0.916 | OA=0.940 | precision=0.913 | recall=0.908 | F1=0.910 | leaf_IoU=0.927 | stem_IoU=0.841
+Epoch 022 | train_loss=0.374 | val_loss=0.457 | mIoU=0.882 | mAcc=0.919 | OA=0.942 | precision=0.917 | recall=0.911 | F1=0.914 | leaf_IoU=0.931 | stem_IoU=0.847
+Epoch 023 | train_loss=0.361 | val_loss=0.452 | mIoU=0.884 | mAcc=0.921 | OA=0.943 | precision=0.919 | recall=0.914 | F1=0.916 | leaf_IoU=0.934 | stem_IoU=0.850
+Epoch 024 | train_loss=0.349 | val_loss=0.449 | mIoU=0.886 | mAcc=0.923 | OA=0.944 | precision=0.921 | recall=0.916 | F1=0.918 | leaf_IoU=0.936 | stem_IoU=0.854
+Epoch 025 | train_loss=0.336 | val_loss=0.451 | mIoU=0.883 | mAcc=0.920 | OA=0.942 | precision=0.918 | recall=0.913 | F1=0.915 | leaf_IoU=0.934 | stem_IoU=0.849
+Epoch 026 | train_loss=0.324 | val_loss=0.456 | mIoU=0.879 | mAcc=0.917 | OA=0.940 | precision=0.914 | recall=0.908 | F1=0.911 | leaf_IoU=0.930 | stem_IoU=0.842
+Epoch 027 | train_loss=0.313 | val_loss=0.463 | mIoU=0.872 | mAcc=0.912 | OA=0.937 | precision=0.908 | recall=0.901 | F1=0.904 | leaf_IoU=0.924 | stem_IoU=0.832
+Epoch 028 | train_loss=0.301 | val_loss=0.471 | mIoU=0.866 | mAcc=0.907 | OA=0.934 | precision=0.903 | recall=0.896 | F1=0.899 | leaf_IoU=0.919 | stem_IoU=0.821
+Epoch 029 | train_loss=0.292 | val_loss=0.485 | mIoU=0.858 | mAcc=0.901 | OA=0.930 | precision=0.897 | recall=0.889 | F1=0.893 | leaf_IoU=0.911 | stem_IoU=0.809
+Epoch 030 | train_loss=0.281 | val_loss=0.501 | mIoU=0.849 | mAcc=0.894 | OA=0.926 | precision=0.889 | recall=0.881 | F1=0.885 | leaf_IoU=0.904 | stem_IoU=0.793
+Epoch 031 | train_loss=0.273 | val_loss=0.516 | mIoU=0.842 | mAcc=0.888 | OA=0.923 | precision=0.884 | recall=0.873 | F1=0.878 | leaf_IoU=0.898 | stem_IoU=0.781
+Epoch 032 | train_loss=0.265 | val_loss=0.529 | mIoU=0.836 | mAcc=0.883 | OA=0.921 | precision=0.879 | recall=0.867 | F1=0.873 | leaf_IoU=0.891 | stem_IoU=0.772
+Epoch 033 | train_loss=0.258 | val_loss=0.541 | mIoU=0.841 | mAcc=0.886 | OA=0.922 | precision=0.881 | recall=0.871 | F1=0.876 | leaf_IoU=0.894 | stem_IoU=0.779
+Epoch 034 | train_loss=0.251 | val_loss=0.557 | mIoU=0.831 | mAcc=0.878 | OA=0.918 | precision=0.872 | recall=0.861 | F1=0.866 | leaf_IoU=0.884 | stem_IoU=0.764
+Epoch 035 | train_loss=0.244 | val_loss=0.568 | mIoU=0.839 | mAcc=0.884 | OA=0.920 | precision=0.878 | recall=0.869 | F1=0.873 | leaf_IoU=0.890 | stem_IoU=0.776
+Epoch 036 | train_loss=0.237 | val_loss=0.582 | mIoU=0.833 | mAcc=0.879 | OA=0.917 | precision=0.871 | recall=0.862 | F1=0.866 | leaf_IoU=0.883 | stem_IoU=0.765
+Best mIoU: 0.8860 at epoch 24
+Best F1: 0.9180 at epoch 24
+[Note] Common failure cases: thin stem missing, leaf-stem boundary confusion, occlusion near overlapping leaves.
