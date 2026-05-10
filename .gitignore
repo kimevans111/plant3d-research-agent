@@ -7,6 +7,8 @@ __pycache__/
 venv/
 env/
 .env
+.env.*
+!.env.example
 .rag_index/
 uploads/*
 !uploads/.gitkeep
@@ -15,5 +17,12 @@ reports/*
 !reports/figures/
 reports/figures/*
 !reports/figures/.gitkeep
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+.vscode/
+.idea/
+*.sqlite
+*.db
 .DS_Store
 Thumbs.db

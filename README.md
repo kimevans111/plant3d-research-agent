@@ -1,8 +1,24 @@
 # Plant3D Research Agent
 
+AI Agent for 3D plant point cloud experiment analysis with RAG, tool calling, training-log parsing, plotting, and Markdown report generation.
+
 Plant3D Research Agent is a runnable MVP for 3D plant point cloud segmentation experiment analysis. It combines FastAPI, Streamlit, rule-based tool calling, local RAG, plotting, and Markdown report generation to help analyze training logs, experiment tables, research notes, and segmentation results.
 
 The system is designed around plant phenotyping research workflows: Plant-GeoAT, PointNet++, DGCNN, PointTransformerV3, PointVector, PointLIBR, mIoU, OA, Precision, Recall, F1-score, class-wise IoU, leaf IoU, stem IoU, RMSE, MAE, and R2.
+
+## Highlights
+
+- FastAPI + Streamlit runnable MVP for an AI Agent internship portfolio.
+- Rule-based tool calling for log parsing, metric diagnosis, plotting, and report generation.
+- Local RAG over research notes with mock LLM fallback, so the demo runs without API keys.
+- Docker, tests, sample data, and interview-ready docs included.
+
+## Quick Start
+
+```bash
+pip install -r requirements.txt
+python scripts/run_demo.py
+```
 
 ## Features
 
