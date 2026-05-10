@@ -52,4 +52,4 @@ Plant-GeoAT 为什么能缓解 leaf-stem boundary confusion?
 | 3 | 组织回答 | `_compose_rag_answer` 或 LLM provider | 带来源的研究解释 |
 | 4 | 返回结果 | API response | answer、citations、used_tools |
 
-面试讲解重点：Agent 的可信度来自工具输出和 citation，而不是凭空生成。
+工程说明：Agent 的可信度来自工具输出和 citation，而不是凭空生成。

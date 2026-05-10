@@ -8,10 +8,10 @@ The system is designed around plant phenotyping research workflows: Plant-GeoAT,
 
 ## Highlights
 
-- FastAPI + Streamlit runnable MVP for an AI Agent internship portfolio.
+- FastAPI + Streamlit runnable MVP for experiment analysis workflows.
 - Rule-based tool calling for log parsing, metric diagnosis, plotting, and report generation.
 - Local RAG over research notes with mock LLM fallback, so the demo runs without API keys.
-- Docker, tests, sample data, and interview-ready docs included.
+- Docker, tests, sample data, and technical documentation included.
 
 ## Quick Start
 
@@ -32,20 +32,11 @@ python scripts/run_demo.py
 - Generate Markdown reports under `reports/`.
 - Run without API keys through mock LLM and local hashing embeddings.
 
-## Portfolio Docs
+## Documentation
 
-This repository is prepared as an internship portfolio project. The most useful
-interview-facing documents are:
-
-- `docs/PROJECT_REVIEW.md`: current project understanding and priority fixes.
-- `docs/README_PORTFOLIO.md`: portfolio-level project introduction.
 - `docs/ARCHITECTURE.md`: architecture, data flow, Agent workflow, Tool Calling, and RAG.
-- `docs/AGENT_TRACE.md`: sample Agent execution trace for demo explanation.
-- `docs/PROJECT_WALKTHROUGH.md`: 2-minute and 5-minute project explanation scripts.
-- `docs/INTERVIEW_STUDY_GUIDE.md`: systematic study notes for AI Agent/RAG interviews.
-- `docs/INTERVIEW_QA.md`: common interview questions and answers.
-- `docs/RESUME_TEMPLATE.md`: resume bullet templates.
-- `docs/DEMO_OUTPUT.md`: expected command-line demo output shape.
+- `docs/AGENT_TRACE.md`: sample Agent execution trace.
+- `docs/DEMO_OUTPUT.md`: expected command-line demo output.
 
 ## Directory Structure
 
