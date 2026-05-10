@@ -1,4 +1,4 @@
-"""Run a local portfolio demo for Plant3D Research Agent."""
+"""Run a local demo for Plant3D Research Agent."""
 
 from __future__ import annotations
 

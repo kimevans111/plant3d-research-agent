@@ -78,6 +78,6 @@ Common research problems:
 
 ## Expected Output Quality
 
-The project should be useful as a portfolio project for AI Agent development internship applications.
+The project should be clear, reproducible, and useful for external technical review.
 
 Therefore, README, examples, tests, and demo usability are important.

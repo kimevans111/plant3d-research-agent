@@ -17,20 +17,24 @@ from app.schemas import (
     AskRequest,
     BuildIndexRequest,
     HealthResponse,
+    RagEvalRunRequest,
     UploadResponse,
 )
 from rag.retriever import build_index
+from rag_eval.evaluator import RagEvaluator
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 UPLOADS_DIR = BASE_DIR / "uploads"
 REPORTS_DIR = BASE_DIR / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
+RAG_EVAL_DIR = REPORTS_DIR / "rag_eval"
 SUPPORTED_UPLOAD_SUFFIXES = {".txt", ".log", ".md", ".csv", ".json", ".pdf"}
 
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+RAG_EVAL_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(
     title="Plant3D Research Agent",
@@ -160,3 +164,58 @@ def get_report(filename: str) -> FileResponse:
         else:
             raise HTTPException(status_code=404, detail="Report not found.")
     return FileResponse(path)
+
+
+@app.post("/rag-eval/run")
+def run_rag_eval(request: RagEvalRunRequest) -> dict[str, Any]:
+    """Run lightweight RAG retrieval evaluation."""
+    eval_file = _resolve_user_path(request.eval_file)
+    docs_dir = _resolve_user_path(request.docs_dir)
+    if not eval_file.is_file() or eval_file.suffix.lower() != ".jsonl":
+        raise HTTPException(status_code=400, detail="eval_file must be a .jsonl file.")
+    if not docs_dir.is_dir():
+        raise HTTPException(status_code=400, detail="docs_dir must be a directory.")
+    if request.retriever not in {"auto", "keyword", "json", "chroma"}:
+        raise HTTPException(status_code=400, detail="retriever must be one of auto, keyword, json, chroma.")
+
+    try:
+        result = RagEvaluator(
+            eval_file=eval_file,
+            docs_dir=docs_dir,
+            output_dir=RAG_EVAL_DIR,
+            top_k=request.top_k,
+            use_agent_answer=request.use_agent_answer,
+            retriever=request.retriever,
+            rebuild_index=request.rebuild_index,
+        ).run()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to run RAG eval: {exc}") from exc
+    return {
+        "summary": result["summary"],
+        "report_path": result["report_path"],
+        "detail_path": result["detail_path"],
+        "summary_path": result["summary_path"],
+        "trace": result["trace"],
+        "metrics_by_category": result.get("metrics_by_category", {}),
+        "failure_cases": result.get("failure_cases", [])[:10],
+    }
+
+
+@app.get("/rag-eval/reports/{filename}")
+def get_rag_eval_report(filename: str) -> FileResponse:
+    """Download a RAG evaluation Markdown report."""
+    safe_name = _safe_filename(filename)
+    path = _ensure_within_project(RAG_EVAL_DIR / safe_name)
+    if path.suffix.lower() != ".md" or not path.exists() or not path.is_file():
+        raise HTTPException(status_code=404, detail="RAG eval report not found.")
+    return FileResponse(path, media_type="text/markdown")
+
+
+@app.get("/rag-eval/results/{filename}")
+def get_rag_eval_result(filename: str) -> FileResponse:
+    """Download a RAG evaluation JSON result file."""
+    safe_name = _safe_filename(filename)
+    path = _ensure_within_project(RAG_EVAL_DIR / safe_name)
+    if path.suffix.lower() != ".json" or not path.exists() or not path.is_file():
+        raise HTTPException(status_code=404, detail="RAG eval result not found.")
+    return FileResponse(path, media_type="application/json")

@@ -32,6 +32,15 @@ class BuildIndexRequest(BaseModel):
     overlap: int = 150
 
 
+class RagEvalRunRequest(BaseModel):
+    eval_file: str = "examples/eval/rag_eval_questions.jsonl"
+    docs_dir: str = "examples"
+    top_k: int = Field(default=3, ge=1, le=20)
+    use_agent_answer: bool = False
+    retriever: str = "auto"
+    rebuild_index: bool = False
+
+
 class AgentResponse(BaseModel):
     answer: str
     used_tools: list[str]

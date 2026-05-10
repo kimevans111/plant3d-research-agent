@@ -62,6 +62,50 @@ def show_agent_result(result: dict[str, Any]) -> None:
             st.info(f"Report path: {report_path}")
 
 
+def show_rag_eval_result(result: dict[str, Any]) -> None:
+    """Render RAG evaluation metrics and report downloads."""
+    summary = result.get("summary", {})
+    st.subheader("Summary Metrics")
+    st.dataframe(
+        [{"metric": key, "value": value} for key, value in summary.items() if key != "metrics_by_category"],
+        use_container_width=True,
+    )
+
+    metrics_by_category = result.get("metrics_by_category") or summary.get("metrics_by_category") or {}
+    if metrics_by_category:
+        st.subheader("Metrics by Category")
+        rows = [{"category": category, **values} for category, values in metrics_by_category.items()]
+        st.dataframe(rows, use_container_width=True)
+
+    failure_cases = result.get("failure_cases") or []
+    if failure_cases:
+        st.subheader("Failure Cases")
+        for item in failure_cases[:5]:
+            with st.expander(f"{item.get('id')} | score={item.get('average_score', 0):.3f} | {item.get('question')}"):
+                st.write("Expected sources:", item.get("expected_sources", []))
+                st.write("Retrieved sources:", item.get("retrieved_sources", []))
+                st.write("Missing keywords:", item.get("missing_keywords", []))
+                st.write("Failure reason:", item.get("failure_reason"))
+
+    col_report, col_detail = st.columns(2)
+    with col_report:
+        _download_backend_file("Download RAG Eval Report", result.get("report_path"), "/rag-eval/reports")
+    with col_detail:
+        _download_backend_file("Download RAG Eval Details", result.get("detail_path"), "/rag-eval/results")
+
+
+def _download_backend_file(label: str, file_path: str | None, endpoint: str) -> None:
+    if not file_path:
+        return
+    filename = Path(file_path).name
+    try:
+        response = requests.get(f"{BACKEND_URL}{endpoint}/{filename}", timeout=30)
+        response.raise_for_status()
+        st.download_button(label, data=response.content, file_name=filename)
+    except Exception:
+        st.info(f"{label}: {file_path}")
+
+
 def main() -> None:
     st.set_page_config(page_title="Plant3D Research Agent", layout="wide")
     st.title("Plant3D Research Agent")
@@ -142,6 +186,33 @@ def main() -> None:
             show_agent_result(result)
         except Exception as exc:
             st.error(f"Agent request failed: {exc}")
+
+    st.subheader("RAG Evaluation")
+    with st.form("rag_eval_form"):
+        eval_file = st.text_input("Eval file", value="examples/eval/rag_eval_questions.jsonl")
+        docs_dir = st.text_input("Docs directory", value="examples")
+        top_k = st.slider("top_k", min_value=1, max_value=10, value=3)
+        retriever = st.selectbox("Retriever", options=["auto", "keyword", "json", "chroma"], index=0)
+        use_agent_answer = st.checkbox("Use Agent answer generation", value=False)
+        rebuild_index = st.checkbox("Rebuild index", value=False)
+        submitted = st.form_submit_button("Run RAG Evaluation", type="primary")
+
+    if submitted:
+        payload = {
+            "eval_file": eval_file,
+            "docs_dir": docs_dir,
+            "top_k": top_k,
+            "use_agent_answer": use_agent_answer,
+            "retriever": retriever,
+            "rebuild_index": rebuild_index,
+        }
+        try:
+            st.session_state.rag_eval_result = post_json("/rag-eval/run", payload)
+        except Exception as exc:
+            st.error(f"RAG evaluation failed: {exc}")
+
+    if st.session_state.get("rag_eval_result"):
+        show_rag_eval_result(st.session_state.rag_eval_result)
 
 
 if __name__ == "__main__":

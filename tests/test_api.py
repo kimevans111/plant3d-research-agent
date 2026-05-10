@@ -65,3 +65,24 @@ def test_build_index_and_doc_qa_endpoint() -> None:
     body = ask_response.json()
     assert "rag_retrieve_context" in body["used_tools"]
     assert body["citations"]
+
+
+def test_rag_eval_run_endpoint() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/rag-eval/run",
+        json={
+            "eval_file": "examples/eval/rag_eval_questions.jsonl",
+            "docs_dir": "examples",
+            "top_k": 2,
+            "use_agent_answer": False,
+            "retriever": "keyword",
+            "rebuild_index": True,
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["summary"]["num_questions"] >= 20
+    assert body["report_path"].endswith(".md")

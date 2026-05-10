@@ -1,0 +1,83 @@
+{
+  "summary": {
+    "num_questions": 20,
+    "source_hit_at_k": 0.75,
+    "keyword_recall": 0.6586,
+    "citation_hit": 0.75,
+    "answer_point_coverage": 0.7042,
+    "retrieval_empty_rate": 0.0,
+    "average_score": 0.7157,
+    "metrics_by_category": {
+      "agent_tool": {
+        "count": 2,
+        "source_hit_at_k": 0.5,
+        "keyword_recall": 0.125,
+        "citation_hit": 0.5,
+        "answer_point_coverage": 0.1666,
+        "average_score": 0.3229
+      },
+      "dataset": {
+        "count": 2,
+        "source_hit_at_k": 1.0,
+        "keyword_recall": 0.875,
+        "citation_hit": 1.0,
+        "answer_point_coverage": 0.8334,
+        "average_score": 0.9271
+      },
+      "failure_case": {
+        "count": 3,
+        "source_hit_at_k": 0.6667,
+        "keyword_recall": 0.5833,
+        "citation_hit": 0.6667,
+        "answer_point_coverage": 0.5556,
+        "average_score": 0.6181
+      },
+      "method": {
+        "count": 4,
+        "source_hit_at_k": 1.0,
+        "keyword_recall": 0.75,
+        "citation_hit": 1.0,
+        "answer_point_coverage": 0.75,
+        "average_score": 0.875
+      },
+      "metrics": {
+        "count": 4,
+        "source_hit_at_k": 0.25,
+        "keyword_recall": 0.6639,
+        "citation_hit": 0.25,
+        "answer_point_coverage": 0.7292,
+        "average_score": 0.4733
+      },
+      "phenotyping": {
+        "count": 1,
+        "source_hit_at_k": 1.0,
+        "keyword_recall": 0.8,
+        "citation_hit": 1.0,
+        "answer_point_coverage": 1.0,
+        "average_score": 0.95
+      },
+      "report": {
+        "count": 1,
+        "source_hit_at_k": 1.0,
+        "keyword_recall": 0.6667,
+        "citation_hit": 1.0,
+        "answer_point_coverage": 1.0,
+        "average_score": 0.9167
+      },
+      "training_log": {
+        "count": 3,
+        "source_hit_at_k": 1.0,
+        "keyword_recall": 0.7667,
+        "citation_hit": 1.0,
+        "answer_point_coverage": 0.8333,
+        "average_score": 0.9
+      }
+    }
+  },
+  "summary_path": "reports\\rag_eval\\rag_eval_summary_20260510_210356.json",
+  "detail_path": "reports\\rag_eval\\rag_eval_details_20260510_210356.json",
+  "report_path": "reports\\rag_eval\\rag_eval_report_20260510_210356.md",
+  "trace": [
+    "Built RAG index with backend=simple-json, documents=3, chunks=12."
+  ]
+}

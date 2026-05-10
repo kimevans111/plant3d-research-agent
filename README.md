@@ -37,6 +37,7 @@ python scripts/run_demo.py
 - `docs/ARCHITECTURE.md`: architecture, data flow, Agent workflow, Tool Calling, and RAG.
 - `docs/AGENT_TRACE.md`: sample Agent execution trace.
 - `docs/DEMO_OUTPUT.md`: expected command-line demo output.
+- `docs/RAG_EVAL_GUIDE.md`: RAG-Eval Mini metrics, workflow, and tuning guidance.
 
 ## Directory Structure
 
@@ -45,6 +46,7 @@ Plant3D-Research-Agent/
 ├── app/
 ├── agent/
 ├── rag/
+├── rag_eval/
 ├── tools/
 ├── llm/
 ├── frontend/
@@ -179,6 +181,112 @@ curl -X POST http://localhost:8000/ask ^
   -H "Content-Type: application/json" ^
   -d "{\"query\":\"Plant-GeoAT 为什么能缓解 leaf-stem boundary confusion？\"}"
 ```
+
+## RAG Evaluation
+
+RAG-Eval Mini is a lightweight retrieval evaluation module for the research-document QA flow. It helps answer practical questions that a plain RAG demo often leaves vague:
+
+- Did top-k retrieval include the expected source document?
+- Did retrieved chunks or generated answers contain the expected technical keywords?
+- Did citations point to the right source files?
+- Which categories fail, such as method questions, training-log questions, or metric lookup questions?
+- What should be tuned next: chunking, top_k, metadata, query rewrite, hybrid retrieval, or answer prompting?
+
+### Eval Set Format
+
+The bundled eval set is stored at `examples/eval/rag_eval_questions.jsonl`. Each line is one JSON object:
+
+```json
+{
+  "id": "q001",
+  "question": "Plant-GeoAT 为什么能缓解 leaf-stem boundary confusion？",
+  "expected_keywords": ["leaf-stem boundary confusion", "local geometry"],
+  "expected_sources": ["sample_paper_notes.md"],
+  "expected_answer_points": ["uses local geometry features"],
+  "category": "method"
+}
+```
+
+The sample set contains 20 questions across `method`, `metrics`, `training_log`, `failure_case`, `phenotyping`, `dataset`, `report`, and `agent_tool`.
+
+### Metrics
+
+| Metric | Meaning |
+| --- | --- |
+| `source_hit_at_k` | Whether top-k retrieved chunks contain an expected source file. |
+| `keyword_recall` | Fraction of expected keywords found in retrieved chunks or answer text. |
+| `citation_hit` | Whether citations point to expected sources. |
+| `answer_point_coverage` | Fraction of expected answer points covered by the generated answer or retrieved context. |
+| `retrieval_empty_rate` | Fraction of questions with no retrieved chunks. |
+| `average_score` | Simple average of source hit, keyword recall, citation hit, and answer coverage. |
+
+### CLI
+
+```bash
+python -m rag_eval.cli \
+  --eval-file examples/eval/rag_eval_questions.jsonl \
+  --docs-dir examples \
+  --top-k 3 \
+  --output-dir reports/rag_eval \
+  --use-agent-answer false \
+  --retriever auto \
+  --rebuild-index true
+```
+
+The command writes:
+
+- `reports/rag_eval/rag_eval_summary_*.json`
+- `reports/rag_eval/rag_eval_details_*.json`
+- `reports/rag_eval/rag_eval_report_*.md`
+
+Sample public outputs are included under `examples/outputs/`.
+
+### FastAPI
+
+Start the backend:
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Run evaluation:
+
+```bash
+curl -X POST http://localhost:8000/rag-eval/run ^
+  -H "Content-Type: application/json" ^
+  -d "{\"eval_file\":\"examples/eval/rag_eval_questions.jsonl\",\"docs_dir\":\"examples\",\"top_k\":3,\"use_agent_answer\":false,\"retriever\":\"auto\",\"rebuild_index\":true}"
+```
+
+Download generated artifacts:
+
+- `GET /rag-eval/reports/{filename}`
+- `GET /rag-eval/results/{filename}`
+
+### Streamlit
+
+Start the frontend:
+
+```bash
+streamlit run frontend/streamlit_app.py
+```
+
+Use the `RAG Evaluation` section to choose the eval file, top_k, retriever backend, and whether to call the Agent answer path. The UI displays summary metrics, metrics by category, low-score failure cases, and report downloads.
+
+### How To Read The Report
+
+- Low `source_hit_at_k`: check chunk splitting, source metadata, and top_k.
+- Low `keyword_recall`: try query rewrite, stronger embeddings, or hybrid keyword + vector retrieval.
+- Low `citation_hit`: inspect citation binding between retrieved chunks and source filenames.
+- Low `answer_point_coverage`: improve prompt wording or pass more relevant context.
+- High `retrieval_empty_rate`: inspect document loading and index rebuild behavior.
+
+### Future Improvements
+
+- Add real embedding providers and compare against the current hashing embeddings.
+- Add reranking and hybrid search.
+- Expand the eval set with more real failure modes and manually labeled expected sources.
+- Add LLM-as-judge only after deterministic retrieval metrics are stable.
+- Persist query, retrieval, citation, and report traces for regression tracking.
 
 ## Tests
 
