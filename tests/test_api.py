@@ -86,3 +86,25 @@ def test_rag_eval_run_endpoint() -> None:
     body = response.json()
     assert body["summary"]["num_questions"] >= 20
     assert body["report_path"].endswith(".md")
+
+
+def test_skill_layer_endpoints() -> None:
+    client = TestClient(app)
+
+    skills_response = client.get("/skills")
+
+    assert skills_response.status_code == 200
+    assert any(
+        item["skill_name"] == "rag_evaluation"
+        for item in skills_response.json()["skills"]
+    )
+
+    select_response = client.post(
+        "/skills/select",
+        json={"query": "运行 RAG-Eval 看 citation hit 是否可靠"},
+    )
+
+    assert select_response.status_code == 200
+    body = select_response.json()
+    assert body["selected_skill"] == "rag_evaluation"
+    assert body["trace"]

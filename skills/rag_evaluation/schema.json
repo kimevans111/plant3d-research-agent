@@ -1,0 +1,43 @@
+{
+  "skill_name": "rag_evaluation",
+  "version": "0.1.0",
+  "description": "Evaluate RAG retrieval quality, source hit, keyword recall, citation hit, answer coverage, and failure cases.",
+  "categories": ["rag_eval", "metrics", "retrieval", "citation"],
+  "recommended_tools": [
+    "load_eval_questions",
+    "run_retrieval",
+    "compute_source_hit_at_k",
+    "compute_keyword_recall",
+    "compute_citation_hit",
+    "compute_answer_point_coverage",
+    "generate_rag_eval_report"
+  ],
+  "required_fields": ["eval_file", "docs_dir"],
+  "optional_fields": ["top_k", "retriever", "use_agent_answer", "rebuild_index"],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "eval_file": {"type": "string"},
+      "docs_dir": {"type": "string"},
+      "top_k": {"type": "integer"},
+      "retriever": {"type": "string"},
+      "use_agent_answer": {"type": "boolean"},
+      "rebuild_index": {"type": "boolean"}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "summary": {"type": "object"},
+      "items": {"type": "array"},
+      "report_path": {"type": "string"},
+      "detail_path": {"type": "string"},
+      "failure_cases": {"type": "array"}
+    }
+  },
+  "error_schema": {
+    "code": "string",
+    "message": "string",
+    "recoverable": "boolean"
+  }
+}

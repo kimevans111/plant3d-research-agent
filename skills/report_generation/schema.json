@@ -1,0 +1,40 @@
+{
+  "skill_name": "report_generation",
+  "version": "0.1.0",
+  "description": "Generate Markdown reports from training metrics, RAG evaluation results, figures, citations, and experiment summaries.",
+  "categories": ["report", "markdown", "export"],
+  "recommended_tools": [
+    "generate_markdown_report",
+    "generate_training_report",
+    "generate_rag_eval_report",
+    "collect_figures",
+    "collect_citations"
+  ],
+  "required_fields": ["query"],
+  "optional_fields": ["metrics", "figures", "citations", "rag_eval_result", "output_dir"],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {"type": "string"},
+      "metrics": {"type": "object"},
+      "figures": {"type": "array", "items": {"type": "string"}},
+      "citations": {"type": "array"},
+      "rag_eval_result": {"type": "object"},
+      "output_dir": {"type": ["string", "null"]}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "report_path": {"type": "string"},
+      "sections": {"type": "array", "items": {"type": "string"}},
+      "missing_items": {"type": "array", "items": {"type": "string"}},
+      "used_tools": {"type": "array", "items": {"type": "string"}}
+    }
+  },
+  "error_schema": {
+    "code": "string",
+    "message": "string",
+    "recoverable": "boolean"
+  }
+}

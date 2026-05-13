@@ -1,0 +1,38 @@
+{
+  "skill_name": "plant3d_domain_explanation",
+  "version": "0.1.0",
+  "description": "Explain 3D plant point cloud segmentation, phenotyping metrics, failure cases, and experiment wording.",
+  "categories": ["domain", "plant3d", "metrics", "phenotyping"],
+  "recommended_tools": [
+    "domain_glossary",
+    "metric_explanation",
+    "optional_rag_retrieval",
+    "report_text_generator"
+  ],
+  "required_fields": ["query"],
+  "optional_fields": ["metrics", "citations", "context", "task_type"],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {"type": "string"},
+      "metrics": {"type": "object"},
+      "citations": {"type": "array"},
+      "context": {"type": "string"},
+      "task_type": {"type": ["string", "null"]}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "explanation": {"type": "string"},
+      "evidence": {"type": "array"},
+      "unknowns": {"type": "array", "items": {"type": "string"}},
+      "used_tools": {"type": "array", "items": {"type": "string"}}
+    }
+  },
+  "error_schema": {
+    "code": "string",
+    "message": "string",
+    "recoverable": "boolean"
+  }
+}

@@ -30,6 +30,7 @@ python scripts/run_demo.py
 - Build a RAG knowledge base over uploads using a stable local JSON vector store by default, with an implemented Chroma backend available through configuration.
 - Answer research questions with retrieved context and source snippets.
 - Generate Markdown reports under `reports/`.
+- Run an optional E-commerce Ops Agent Mini module over mock product, campaign, and task datasets.
 - Run without API keys through mock LLM and local hashing embeddings.
 
 ## Documentation
@@ -38,6 +39,8 @@ python scripts/run_demo.py
 - `docs/AGENT_TRACE.md`: sample Agent execution trace.
 - `docs/DEMO_OUTPUT.md`: expected command-line demo output.
 - `docs/RAG_EVAL_GUIDE.md`: RAG-Eval Mini metrics, workflow, and tuning guidance.
+- `docs/SKILL_LAYER_GUIDE.md`: lightweight Skill Layer design and extension notes.
+- `docs/SKILL_LAYER_ANALYSIS.md`: current project analysis for Skill Layer integration.
 
 ## Directory Structure
 
@@ -47,9 +50,11 @@ Plant3D-Research-Agent/
 ├── agent/
 ├── rag/
 ├── rag_eval/
+├── skills/
 ├── tools/
 ├── llm/
 ├── frontend/
+├── ecommerce_ops/
 ├── examples/
 ├── tests/
 ├── uploads/
@@ -147,6 +152,19 @@ Plant-GeoAT 为什么能缓解 leaf-stem boundary confusion？
 ```
 
 The system retrieves relevant notes and answers with source snippets.
+
+## E-commerce Ops Agent Mini
+
+The repository also includes a small, self-contained e-commerce operations module under `ecommerce_ops/`. It uses public mock CSV data to demonstrate how the same tool-oriented Agent pattern can be adapted to product anomaly detection, campaign insight extraction, pending task summaries, and Markdown report generation.
+
+FastAPI endpoints:
+
+- `GET /ecommerce/health`
+- `POST /ecommerce/analyze`
+- `POST /ecommerce/report`
+- `GET /ecommerce/reports/{filename}`
+
+The module is optional and does not depend on real business data or external services.
 
 ## Analyze A Training Log Via API
 
@@ -288,6 +306,107 @@ Use the `RAG Evaluation` section to choose the eval file, top_k, retriever backe
 - Add LLM-as-judge only after deterministic retrieval metrics are stable.
 - Persist query, retrieval, citation, and report traces for regression tracking.
 
+## Skill Layer
+
+The Skill Layer is a lightweight capability layer above concrete tools. It does not replace the existing Agent and does not introduce a heavy multi-agent framework. Its purpose is to make the project's main workflows explicit, reusable, and easier to test.
+
+### Why Skill Layer
+
+The project already has tool chains for log parsing, RAG QA, RAG evaluation, and Markdown report generation. A Skill names the capability boundary around those tools:
+
+- when the capability should be used
+- what inputs and outputs it expects
+- which tools it may call
+- how missing data or failure should be handled
+- what trace can be shown to users and tests
+
+### Skill, Tool, Agent, and Sub-Agent
+
+| Concept | Meaning in this project |
+| --- | --- |
+| Skill | Reusable capability such as `rag_evaluation` or `training_log_analysis`. |
+| Tool | Concrete function such as `parse_training_log`, `rag_retrieve_context`, or `generate_markdown_report`. |
+| Agent | The orchestrator that interprets the user request and routes the task. |
+| Sub-Agent | An independent planning agent. This MVP does not implement full Sub-Agents. |
+
+### Supported Skills
+
+| Skill | Internal tools |
+| --- | --- |
+| `training_log_analysis` | `parse_training_log`, `summarize_metrics`, `generate_training_curves`, `generate_markdown_report` |
+| `rag_research_qa` | `document_loader`, `text_splitter`, `retriever`, `vector_store`, citation formatting |
+| `rag_evaluation` | eval dataset loading, retrieval, source hit, keyword recall, citation hit, answer coverage, report generation |
+| `report_generation` | Markdown report generation, figure collection, citation collection |
+| `plant3d_domain_explanation` | domain glossary, metric explanation, optional RAG retrieval |
+
+### Architecture
+
+```text
+User query + optional files
+        |
+        v
+SkillSelector (rule-based)
+        |
+        v
+SkillRegistry (SKILL.md + schema.json)
+        |
+        v
+SkillExecutor
+        |
+        v
+selected_skill + confidence + recommended_tools + trace
+```
+
+### Demo
+
+```bash
+python scripts/demo_skill_selection.py --query "为什么我的 F1 后期震荡？"
+python scripts/demo_skill_selection.py --query "运行 RAG-Eval 看 citation hit 是否可靠"
+python scripts/demo_skill_selection.py --query "Plant-GeoAT 为什么能缓解 leaf-stem boundary confusion？"
+```
+
+### API
+
+```bash
+curl http://localhost:8000/skills
+
+curl -X POST http://localhost:8000/skills/select ^
+  -H "Content-Type: application/json" ^
+  -d "{\"query\":\"运行 RAG-Eval 看 citation hit 是否可靠\"}"
+```
+
+Endpoints:
+
+- `GET /skills`
+- `GET /skills/{skill_name}`
+- `POST /skills/select`
+
+### Streamlit
+
+Start the frontend and use the `Skill Layer` section:
+
+```bash
+streamlit run frontend/streamlit_app.py
+```
+
+The UI lists available Skills, accepts a query, and displays the selected skill, confidence, reason, recommended tools, and trace.
+
+### Add a Skill
+
+1. Create `skills/<skill_name>/SKILL.md`.
+2. Create `skills/<skill_name>/schema.json`.
+3. Add `examples.md`.
+4. Add selector keywords in `skills/selector.py` if automatic routing is needed.
+5. Add pytest coverage for the new skill.
+
+### Why it reduces Agent complexity
+
+The Agent does not need to know every detail of every workflow. It can select a Skill, inspect its schema, and then call the relevant tools. This keeps the orchestration explainable while preserving the existing working modules.
+
+### How to explain it
+
+The project uses Skills as transparent capability definitions. It is not claiming a full enterprise runtime. The value is that each capability has a schema, constraints, recommended tools, failure handling, tests, API access, and a traceable selection result.
+
 ## Tests
 
 ```bash
@@ -300,6 +419,9 @@ Current tests cover:
 - Markdown report generation
 - FastAPI health/upload/analyze endpoints
 - RAG index build and retrieval smoke flow
+- RAG-Eval dataset, metrics, evaluator, and report generation
+- Skill registry, selector, executor, and API endpoints
+- E-commerce Ops Agent Mini data loading, tools, agent behavior, and API endpoints
 
 ## Docker
 
@@ -325,6 +447,65 @@ Then open:
 
 - API: <http://localhost:8000/docs>
 - Streamlit: <http://localhost:8501>
+
+## E-commerce Ops Agent Mini
+
+A lightweight business scenario extension module for e-commerce operations simulation with mock data.
+
+### Why this module
+
+This module demonstrates how the AI Agent architecture (task classification → tool selection → tool execution → report output) migrates to an **e-commerce operations** domain. It targets roles like **AI Agent Application Developer** in e-commerce operations teams.
+
+### Business Scenarios
+
+- **Product Data Check**: stock alerts, low-conversion-high-exposure, high refund rate, low rating
+- **Campaign Review**: low-ROI campaigns, high-spend-low-orders, low-CTR creative issues
+- **Task Follow-up**: overdue/pending merchant tasks filtered by priority and deadline
+- **Ops Report Generation**: daily ops report with anomalies, insights, tasks, suggestions, and next actions
+- **Multi-role Collaboration Prototype**: Data Analyst → Copywriter → Notifier lightweight pipeline
+
+### Data
+
+All data is **mock data** for demonstration purposes only (35 products, 12 campaigns, 16 tasks). No real merchant or platform data is used.
+
+### Quick Demo
+
+```bash
+# CLI demo
+python scripts/demo_ecommerce_ops.py --preset report
+
+# API endpoints
+uvicorn app.main:app --reload
+curl -X POST http://localhost:8000/ecommerce/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"query":"哪些商品库存不足？"}'
+
+# Run tests
+pytest tests/test_ecommerce_*.py -v
+```
+
+### Module Structure
+
+```text
+ecommerce_ops/
+├── agent.py           # EcommerceOpsAgent with query routing + multi-role trace
+├── analyzers.py       # Product anomaly, campaign insight, task analysis logic
+├── tools.py           # 5 callable tool functions
+├── schemas.py         # Pydantic models
+├── data_loader.py     # CSV data loading
+├── report.py          # Markdown report generator
+└── sample_data/
+    ├── products.csv
+    ├── campaigns.csv
+    └── merchant_tasks.csv
+```
+
+### Limitations
+
+- All data is mock CSV data, not a real merchant backend.
+- Multi-role is a lightweight function-level pipeline, not a production multi-agent system (no LangGraph / CrewAI).
+- No real LLM API required; rule-based routing + template generation works without API keys.
+- No database, authentication, scheduled tasks, or real notification delivery.
 
 ## MVP Limitations
 

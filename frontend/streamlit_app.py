@@ -21,6 +21,12 @@ def post_json(path: str, payload: dict[str, Any]) -> dict[str, Any]:
     return response.json()
 
 
+def get_json(path: str) -> dict[str, Any]:
+    response = requests.get(f"{BACKEND_URL}{path}", timeout=30)
+    response.raise_for_status()
+    return response.json()
+
+
 def upload_to_backend(file_obj: Any) -> dict[str, Any]:
     files = {"file": (file_obj.name, file_obj.getvalue())}
     response = requests.post(f"{BACKEND_URL}/upload", files=files, timeout=120)
@@ -92,6 +98,23 @@ def show_rag_eval_result(result: dict[str, Any]) -> None:
         _download_backend_file("Download RAG Eval Report", result.get("report_path"), "/rag-eval/reports")
     with col_detail:
         _download_backend_file("Download RAG Eval Details", result.get("detail_path"), "/rag-eval/results")
+
+
+def show_skill_selection_result(result: dict[str, Any]) -> None:
+    """Render Skill Layer selection output."""
+    st.subheader("Selected Skill")
+    st.metric("Skill", result.get("selected_skill", "unknown"))
+    st.write("Confidence:", result.get("confidence"))
+    st.write("Reason:", result.get("reason"))
+
+    tools = result.get("recommended_tools") or []
+    if tools:
+        st.write("Recommended tools:", ", ".join(tools))
+
+    trace = result.get("trace") or []
+    if trace:
+        st.subheader("Skill Trace")
+        st.dataframe(trace, use_container_width=True)
 
 
 def _download_backend_file(label: str, file_path: str | None, endpoint: str) -> None:
@@ -213,6 +236,114 @@ def main() -> None:
 
     if st.session_state.get("rag_eval_result"):
         show_rag_eval_result(st.session_state.rag_eval_result)
+
+    st.subheader("Skill Layer")
+    try:
+        skills_payload = get_json("/skills")
+        skill_rows = skills_payload.get("skills", [])
+        if skill_rows:
+            st.dataframe(skill_rows, use_container_width=True)
+    except Exception as exc:
+        st.info(f"Skill list unavailable: {exc}")
+
+    with st.form("skill_layer_form"):
+        skill_query = st.text_input(
+            "Skill selection query",
+            value="运行 RAG-Eval 看 citation hit 是否可靠",
+        )
+        skill_task_type = st.selectbox(
+            "Optional task type",
+            options=[
+                "auto",
+                "log_analysis",
+                "report_generation",
+                "doc_qa",
+                "rag_eval",
+                "domain_explanation",
+            ],
+        )
+        skill_submitted = st.form_submit_button("Select Skill")
+
+    if skill_submitted and skill_query.strip():
+        payload = {
+            "query": skill_query,
+            "file_paths": selected_paths,
+            "task_type": None if skill_task_type == "auto" else skill_task_type,
+        }
+        try:
+            st.session_state.skill_selection_result = post_json("/skills/select", payload)
+        except Exception as exc:
+            st.error(f"Skill selection failed: {exc}")
+
+    if st.session_state.get("skill_selection_result"):
+        show_skill_selection_result(st.session_state.skill_selection_result)
+
+    st.markdown("---")
+    st.header("E-commerce Ops Agent Mini")
+    st.caption("Mock 电商运营数据演示 — 商品分析 / 活动复盘 / 任务跟进 / 日报生成")
+
+    preset_queries = [
+        "哪些商品库存不足或转化率低？",
+        "本周活动效果怎么样？哪些活动ROI较低？",
+        "有哪些高优先级任务还没完成？",
+        "生成一份商家运营日报",
+        "生成一段给商家的提醒文案",
+    ]
+
+    with st.expander("About this module"):
+        st.markdown(
+            "本模块使用 **mock 电商运营数据** 演示 AI Agent 在电商运营场景中的应用。\n"
+            "- 35 条商品数据、12 条活动数据、16 条商家任务数据\n"
+            "- 支持商品异常检查、活动 ROI 复盘、任务跟进、日报生成\n"
+            "- **多角色协作雏形**: Data Analyst / Copywriter / Notifier\n"
+            "- 所有数据均为模拟数据，不包含真实商家信息"
+        )
+
+    selected_preset = st.selectbox(
+        "示例问题",
+        options=["（自定义输入）"] + preset_queries,
+    )
+    ecom_query = st.text_input(
+        "E-commerce ops query",
+        value=selected_preset if selected_preset != "（自定义输入）" else preset_queries[0],
+    )
+
+    if st.button("Analyze E-commerce Ops", type="primary", disabled=not ecom_query.strip()):
+        with st.spinner("Analyzing..."):
+            try:
+                result = post_json("/ecommerce/analyze", {"query": ecom_query})
+                st.session_state.ecom_result = result
+            except Exception as exc:
+                st.error(f"E-commerce analysis failed: {exc}")
+
+    if st.session_state.get("ecom_result"):
+        r = st.session_state.ecom_result
+        st.subheader(f"Selected Tool: `{r.get('selected_tool', 'N/A')}`")
+        st.write(f"Used Tools: {', '.join(r.get('used_tools', []))}")
+
+        with st.expander("Multi-role Trace"):
+            st.json(r.get("trace", []))
+
+        st.subheader("Answer")
+        st.markdown(r.get("answer", ""))
+
+        if r.get("data_preview"):
+            with st.expander("Data Preview"):
+                st.dataframe(r["data_preview"], use_container_width=True)
+
+        if r.get("report_path"):
+            report_name = r["report_path"].replace("\\", "/").split("/")[-1]
+            try:
+                resp = requests.get(f"{BACKEND_URL}/ecommerce/reports/{report_name}", timeout=10)
+                if resp.status_code == 200:
+                    st.download_button(
+                        "Download E-commerce Ops Report",
+                        resp.content,
+                        file_name=report_name,
+                        mime="text/markdown",
+                    )
+            except Exception:
+                st.info(f"Report: {r['report_path']}")
 
 
 if __name__ == "__main__":

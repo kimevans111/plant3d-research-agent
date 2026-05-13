@@ -41,6 +41,12 @@ class RagEvalRunRequest(BaseModel):
     rebuild_index: bool = False
 
 
+class SkillSelectRequest(BaseModel):
+    query: str = Field(..., min_length=1)
+    file_paths: list[str] | None = None
+    task_type: str | None = None
+
+
 class AgentResponse(BaseModel):
     answer: str
     used_tools: list[str]
@@ -54,3 +60,11 @@ class AgentResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     project: str
+
+
+class EcommerceRunRequest(BaseModel):
+    query: str = Field(..., min_length=1, description="Natural language query about e-commerce operations.")
+
+
+class EcommerceReportRequest(BaseModel):
+    report_type: str = Field(default="daily", description="Report type: daily, product, campaign, task.")

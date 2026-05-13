@@ -1,0 +1,40 @@
+{
+  "skill_name": "training_log_analysis",
+  "version": "0.1.0",
+  "description": "Analyze deep learning training logs, summarize metrics, diagnose failures, generate curves, and prepare Markdown reports.",
+  "categories": ["training_log", "metrics", "diagnosis", "report"],
+  "recommended_tools": [
+    "parse_training_log",
+    "summarize_metrics",
+    "diagnose_training",
+    "generate_training_curves",
+    "generate_markdown_report"
+  ],
+  "required_fields": ["query"],
+  "optional_fields": ["file_paths", "task_type", "output_dir"],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {"type": "string"},
+      "file_paths": {"type": "array", "items": {"type": "string"}},
+      "task_type": {"type": ["string", "null"]},
+      "output_dir": {"type": ["string", "null"]}
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "metrics": {"type": "object"},
+      "diagnosis": {"type": "array", "items": {"type": "string"}},
+      "suggestions": {"type": "array", "items": {"type": "string"}},
+      "figures": {"type": "array", "items": {"type": "string"}},
+      "report_path": {"type": ["string", "null"]},
+      "used_tools": {"type": "array", "items": {"type": "string"}}
+    }
+  },
+  "error_schema": {
+    "code": "string",
+    "message": "string",
+    "recoverable": "boolean"
+  }
+}

@@ -16,12 +16,19 @@ from app.schemas import (
     AnalyzeLogRequest,
     AskRequest,
     BuildIndexRequest,
+    EcommerceReportRequest,
+    EcommerceRunRequest,
     HealthResponse,
     RagEvalRunRequest,
+    SkillSelectRequest,
     UploadResponse,
 )
+from ecommerce_ops.agent import EcommerceOpsAgent
+from ecommerce_ops.schemas import EcommerceHealthResponse
 from rag.retriever import build_index
 from rag_eval.evaluator import RagEvaluator
+from skills.executor import SkillExecutor
+from skills.registry import SkillRegistry
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
@@ -29,12 +36,14 @@ UPLOADS_DIR = BASE_DIR / "uploads"
 REPORTS_DIR = BASE_DIR / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
 RAG_EVAL_DIR = REPORTS_DIR / "rag_eval"
+ECOMMERCE_OPS_DIR = REPORTS_DIR / "ecommerce_ops"
 SUPPORTED_UPLOAD_SUFFIXES = {".txt", ".log", ".md", ".csv", ".json", ".pdf"}
 
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 RAG_EVAL_DIR.mkdir(parents=True, exist_ok=True)
+ECOMMERCE_OPS_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(
     title="Plant3D Research Agent",
@@ -152,6 +161,36 @@ def build_rag_index(request: BuildIndexRequest | None = None) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Failed to build RAG index: {exc}") from exc
 
 
+@app.get("/skills")
+def list_skills() -> dict[str, Any]:
+    """List lightweight Skill Layer definitions."""
+    registry = SkillRegistry(BASE_DIR / "skills")
+    return {"skills": [skill.summary() for skill in registry.list_skills()]}
+
+
+@app.post("/skills/select")
+def select_skill(request: SkillSelectRequest) -> dict[str, Any]:
+    """Select the most relevant skill for a user query."""
+    return SkillExecutor(registry=SkillRegistry(BASE_DIR / "skills")).execute(
+        query=request.query,
+        file_paths=request.file_paths or [],
+        task_type=request.task_type,
+    ).to_dict()
+
+
+@app.get("/skills/{skill_name}")
+def get_skill(skill_name: str) -> dict[str, Any]:
+    """Return one skill definition summary and Markdown instructions."""
+    registry = SkillRegistry(BASE_DIR / "skills")
+    skill = registry.get_skill(skill_name)
+    if skill is None:
+        raise HTTPException(status_code=404, detail="Skill not found.")
+    payload = skill.summary()
+    payload["schema"] = skill.schema
+    payload["instructions"] = skill.skill_md
+    return payload
+
+
 @app.get("/reports/{filename}")
 def get_report(filename: str) -> FileResponse:
     """Download a generated report or figure from reports/."""
@@ -219,3 +258,72 @@ def get_rag_eval_result(filename: str) -> FileResponse:
     if path.suffix.lower() != ".json" or not path.exists() or not path.is_file():
         raise HTTPException(status_code=404, detail="RAG eval result not found.")
     return FileResponse(path, media_type="application/json")
+
+
+# ---------------------------------------------------------------------------
+# E-commerce Ops Agent Mini endpoints
+# ---------------------------------------------------------------------------
+
+ECOMMERCE_SAMPLE_DATA_DIR = BASE_DIR / "ecommerce_ops" / "sample_data"
+
+
+@app.get("/ecommerce/health", response_model=EcommerceHealthResponse)
+def ecommerce_health() -> EcommerceHealthResponse:
+    """Health check for the E-commerce Ops Agent Mini module."""
+    data_files = sorted(
+        f.name
+        for f in ECOMMERCE_SAMPLE_DATA_DIR.iterdir()
+        if f.is_file() and f.suffix == ".csv"
+    )
+    return EcommerceHealthResponse(
+        status="ok",
+        module="E-commerce Ops Agent Mini",
+        data_files=data_files,
+    )
+
+
+@app.post("/ecommerce/analyze")
+def ecommerce_analyze(request: EcommerceRunRequest) -> dict[str, Any]:
+    """Analyze an e-commerce ops query using mock data."""
+    agent = EcommerceOpsAgent(reports_dir=ECOMMERCE_OPS_DIR)
+    result = agent.run(query=request.query)
+    return result.model_dump()
+
+
+@app.post("/ecommerce/report")
+def ecommerce_report(request: EcommerceReportRequest | None = None) -> dict[str, Any]:
+    """Generate a structured e-commerce ops report."""
+    request = request or EcommerceReportRequest()
+    from ecommerce_ops.tools import generate_ops_report as gen_report
+    from ecommerce_ops.report import generate_markdown_report
+
+    data = gen_report(report_type=request.report_type)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    report_path = ECOMMERCE_OPS_DIR / f"ecommerce_ops_report_{timestamp}.md"
+    generate_markdown_report(
+        report_data=data,
+        query=f"{request.report_type} report",
+        output_path=report_path,
+    )
+    return {
+        "report_path": str(report_path),
+        "summary": f"Generated {request.report_type} report with {len(data.get('product_anomalies', []))} anomalies, {len(data.get('campaign_insights', []))} insights, {len(data.get('pending_tasks', []))} tasks.",
+        "trace": [
+            {"role": "data_analyst", "action": "generate_ops_report", "status": "success"},
+            {"role": "notifier", "action": "save_report", "status": "success", "detail": str(report_path)},
+        ],
+    }
+
+
+@app.get("/ecommerce/reports/{filename}")
+def get_ecommerce_report(filename: str) -> FileResponse:
+    """Download a generated e-commerce ops report."""
+    safe_name = _safe_filename(filename)
+    path = _ensure_within_project(ECOMMERCE_OPS_DIR / safe_name)
+    if not path.exists() or not path.is_file():
+        raise HTTPException(status_code=404, detail="E-commerce ops report not found.")
+    return FileResponse(path, media_type="text/markdown")
+
+
+# Import datetime for the report endpoint
+from datetime import datetime  # noqa: E402
