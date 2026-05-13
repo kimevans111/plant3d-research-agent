@@ -454,7 +454,7 @@ A lightweight business scenario extension module for e-commerce operations simul
 
 ### Why this module
 
-This module demonstrates how the AI Agent architecture (task classification → tool selection → tool execution → report output) migrates to an **e-commerce operations** domain. It targets roles like **AI Agent Application Developer** in e-commerce operations teams.
+This module demonstrates how the AI Agent architecture (task classification → tool selection → tool execution → report output) can be adapted to an **e-commerce operations** domain using mock operational data.
 
 ### Business Scenarios
 
