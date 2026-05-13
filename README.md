@@ -481,7 +481,7 @@ curl -X POST http://localhost:8000/ecommerce/analyze \
   -d '{"query":"哪些商品库存不足？"}'
 
 # Run tests
-pytest tests/test_ecommerce_*.py -v
+pytest -k ecommerce -v
 ```
 
 ### Module Structure
